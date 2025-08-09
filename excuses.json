@@ -198,6 +198,5 @@
   { "id": 197, "excuse": "I accidentally sent a message to the wrong person." },
   { "id": 198, "excuse": "I was stuck behind a parade of ducks." },
   { "id": 199, "excuse": "My fridge stopped working." },
-  { "id": 200, "excuse": "I got lost in IKEA." },
-  
-]
+  { "id": 200, "excuse": "I got lost in IKEA." }
+  ]
