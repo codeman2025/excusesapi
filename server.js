@@ -44,7 +44,7 @@ app.get('/admin.html', (req, res) => {
 // Serve login page with optional style query param (?style=default)
 app.get('/login', (req, res) => {
   const style = req.query.style || 'default';
-  res.sendFile(path.join(__dirname, 'public', `login-${style}.html`));
+  res.sendFile(path.join(__dirname, 'public', `login.html`));
 });
 
 // Handle login POST, issue JWT token cookie
@@ -120,3 +120,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server up and running on http://localhost:${PORT}`);
 });
+
