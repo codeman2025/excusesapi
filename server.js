@@ -4,8 +4,15 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
+console.log('ENV:', {
+  ADMIN_USERNAME: process.env.ADMIN_USERNAME,
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+  JWT_SECRET: process.env.JWT_SECRET,
+});
+
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // for form submits
 app.use(cookieParser());
 
 const SECRET = process.env.JWT_SECRET;
@@ -41,21 +48,28 @@ app.get('/admin.html', (req, res) => {
   });
 });
 
-// Serve login page with optional style query param (?style=default)
+// Serve login page
 app.get('/login', (req, res) => {
   const style = req.query.style || 'default';
   res.sendFile(path.join(__dirname, 'public', `login.html`));
 });
 
-// Handle login POST, issue JWT token cookie
+// Handle login POST, issue JWT token cookie with try-catch + logs
 app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
-    const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
-    res.cookie('token', token, { httpOnly: true });
-    return res.redirect('/admin');
-  } else {
-    return res.status(401).send('Invalid credentials');
+  try {
+    const { username, password } = req.body;
+    console.log('Login attempt:', username, password);
+
+    if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
+      const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
+      res.cookie('token', token, { httpOnly: true });
+      return res.redirect('/admin');
+    } else {
+      return res.status(401).send('Invalid credentials');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).send('Internal Server Error');
   }
 });
 
@@ -120,4 +134,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server up and running on http://localhost:${PORT}`);
 });
-
