@@ -82,7 +82,7 @@ app.get('/logout', (req, res) => {
 // Serve admin page (locked down with JWT)
 app.get('/admin', authenticateJWT, (req, res) => {
   const style = req.query.style || 'default';
-  res.sendFile(path.join(__dirname, 'public', `admin-${style}.html`));
+  res.sendFile(path.join(__dirname, 'public', `admin.html`));
 });
 
 // Excuses array (example data)
@@ -134,3 +134,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server up and running on http://localhost:${PORT}`);
 });
+
