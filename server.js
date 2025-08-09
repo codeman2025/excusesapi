@@ -15,6 +15,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // for form submits
 app.use(cookieParser());
 
+const cors = require('cors');
+app.use(cors());
+
+
 const SECRET = process.env.JWT_SECRET;
 
 const ADMIN_USER = {
@@ -134,4 +138,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server up and running on http://localhost:${PORT}`);
 });
+
 
