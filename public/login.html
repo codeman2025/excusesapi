@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Random Excuse Generator Admin</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+    .login-container {
+      background: white;
+      padding: 3rem 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .login-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      margin-bottom: 2rem;
+      font-weight: 600;
+      color: #5a2d82;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+    label {
+      text-align: left;
+      font-weight: 600;
+      color: #444;
+      user-select: none;
+    }
+    input[type="text"],
+    input[type="password"] {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      outline-offset: 2px;
+    }
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      border-color: #5a2d82;
+      box-shadow: 0 0 8px #8668c2aa;
+    }
+    button {
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #5a2d82, #8668c2);
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.5);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #764ba2, #5a2d82);
+      box-shadow: 0 8px 20px rgba(134, 104, 194, 0.7);
+    }
+    .error {
+      margin-top: 1rem;
+      color: #c0392b;
+      font-weight: 600;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Admin Login</h1>
+    <form action="/login" method="POST" autocomplete="off">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autofocus autocomplete="username" />
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password" />
+      <button type="submit">Log In</button>
+    </form>
+    <!-- Optional error div for server error messages -->
+    <!-- <div class="error">Invalid username or password</div> -->
+  </div>
+</body>
+</html>
