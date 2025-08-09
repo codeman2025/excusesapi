@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - Random Excuse Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 3rem 1rem;
+      color: #3e2f5a;
+    }
+    .container {
+      background: white;
+      max-width: 600px;
+      width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+      padding: 2.5rem 3rem;
+    }
+    h1 {
+      margin: 0 0 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      color: #5a2d82;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+    form {
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #6f4bbd;
+      letter-spacing: 0.05em;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 2px solid #a892f9;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      outline-offset: 2px;
+    }
+    input[type="text"]:focus {
+      border-color: #5a2d82;
+      box-shadow: 0 0 6px #7a59d9cc;
+    }
+    button {
+      background: linear-gradient(135deg, #5a2d82, #8668c2);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(134, 104, 194, 0.6);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #764ba2, #5a2d82);
+      box-shadow: 0 12px 30px rgba(134, 104, 194, 0.85);
+    }
+    #message {
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #764ba2;
+      text-align: center;
+      min-height: 1.5rem;
+      user-select: none;
+    }
+    h2 {
+      color: #5a2d82;
+      border-bottom: 2px solid #d6c1f0;
+      padding-bottom: 0.3rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.04em;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #d6c1f0;
+      border-radius: 12px;
+      background: #f7f4ff;
+      box-shadow: inset 0 0 6px #d6c1f055;
+    }
+    li {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #d6c1f033;
+      font-weight: 600;
+      color: #5a2d82;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 1rem;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    .excuse-id {
+      font-weight: 700;
+      margin-right: 0.8rem;
+      color: #a892f9;
+      flex-shrink: 0;
+      min-width: 45px;
+      text-align: right;
+    }
+    .excuse-text {
+      flex-grow: 1;
+      user-select: text;
+    }
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: #d2691e;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 0.5rem;
+      font-size: 1.2rem;
+      transition: color 0.2s ease;
+      user-select: none;
+    }
+    .delete-btn:hover {
+      color: #e07b3f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Panel</h1>
+    <form id="excuseForm">
+      <label for="excuseInput">Add a New Excuse:</label>
+      <input type="text" id="excuseInput" placeholder="Type your excuse here" required autocomplete="off" />
+      <button type="submit">Add Excuse</button>
+    </form>
+    <div id="message"></div>
+
+    <h2>Current Excuses</h2>
+    <ul id="excuseList"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('excuseForm');
+    const input = document.getElementById('excuseInput');
+    const message = document.getElementById('message');
+    const list = document.getElementById('excuseList');
+
+    // Fetch and show all excuses
+    async function loadExcuses() {
+      try {
+        const res = await fetch('/api/excuses');
+        if (!res.ok) throw new Error('Failed to load excuses');
+        const data = await res.json();
+        list.innerHTML = '';
+        data.forEach(excuse => {
+          const li = document.createElement('li');
+
+          const idSpan = document.createElement('span');
+          idSpan.className = 'excuse-id';
+          idSpan.textContent = `#${excuse.id}`;
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'excuse-text';
+          textSpan.textContent = excuse.excuse;
+
+          const delBtn = document.createElement('button');
+          delBtn.className = 'delete-btn';
+          delBtn.textContent = '×';
+          delBtn.title = 'Delete excuse';
+          delBtn.addEventListener('click', () => deleteExcuse(excuse.id));
+
+          li.appendChild(idSpan);
+          li.appendChild(textSpan);
+          li.appendChild(delBtn);
+
+          list.appendChild(li);
+        });
+      } catch (err) {
+        message.textContent = 'Could not load excuses.';
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newExcuse = input.value.trim();
+      if (!newExcuse) return;
+      message.textContent = 'Adding excuse...';
+
+      try {
+        const res = await fetch('/api/excuses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ excuse: newExcuse })
+        });
+        if (!res.ok) throw new Error('Failed to add excuse');
+        const data = await res.json();
+        message.textContent = `Added excuse #${data.id}!`;
+        input.value = '';
+        loadExcuses();
+      } catch (err) {
+        message.textContent = 'Error adding excuse.';
+      }
+    });
+
+    async function deleteExcuse(id) {
+      if (!confirm(`Delete excuse #${id}? This action cannot be undone.`)) return;
+      message.textContent = 'Deleting excuse...';
+
+      try {
+        const res = await fetch(`/api/excuses/${id}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) throw new Error('Failed to delete excuse');
+        message.textContent = `Deleted excuse #${id}.`;
+        loadExcuses();
+      } catch (err) {
+        message.textContent = 'Error deleting excuse.';
+      }
+    }
+
+    loadExcuses();
+  </script>
+</body>
+</html>
