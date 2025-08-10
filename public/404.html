@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>404 - API not found</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    body {
+      background: #000;
+      color: #00ff00;
+      font-family: 'Share Tech Mono', monospace;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      padding: 1rem;
+    }
+
+    #terminal {
+      background: #000;
+      border: 2px solid #00ff00;
+      padding: 2rem 3rem;
+      max-width: 700px;
+      width: 90vw;
+      box-shadow: 0 0 15px #00ff0055;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .prompt {
+      color: #00ff00;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    #excuse {
+      font-style: italic;
+      color: #55ff55;
+      margin-top: 1.2rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    #home-btn {
+      margin-top: 2rem;
+      background: none;
+      border: none;
+      color: #00ff00;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.1rem;
+      cursor: pointer;
+      text-align: left;
+      padding-left: 1.5rem;
+      user-select: none;
+      position: relative;
+    }
+
+    #home-btn::before {
+      content: "❯";
+      position: absolute;
+      left: 0;
+      color: #00ff00;
+      font-weight: bold;
+    }
+
+    #home-btn:hover {
+      color: #55ff55;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal">
+    <div><span class="prompt">❯</span> 404 API or request not found.</div>
+    <div>Looks like we don’t have this or our devs were slacking off.</div>
+    <div id="excuse">Fetching dev excuse...</div>
+    <button id="home-btn" onclick="window.location.href='/'">back to home</button>
+  </div>
+
+  <script>
+    fetch('/api/excuses/random')
+      .then(res => res.ok ? res.json() : Promise.reject('Fetch error'))
+      .then(data => {
+        document.getElementById('excuse').textContent = `"${data.excuse}" — The devs' excuse`;
+      })
+      .catch(() => {
+        document.getElementById('excuse').textContent = 'Dev excuse unavailable. They might actually be slacking off 😅';
+      });
+  </script>
+</body>
+</html>
