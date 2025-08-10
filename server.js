@@ -13,7 +13,7 @@ console.log('ENV:', {
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // for form submits
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const cors = require('cors');
@@ -26,9 +26,9 @@ const ADMIN_USER = {
 };
 
 const excusesFile = path.join(__dirname, 'excuses.json');
-console.log('Excuses JSON file path:', excusesFile);  // <-- Check file path for debugging
+console.log('Excuses JSON file path:', excusesFile);
 
-// Load excuses from file or create default
+// Load excuses or create default
 let excuses = [];
 try {
   const data = fs.readFileSync(excusesFile, 'utf8');
@@ -45,13 +45,13 @@ try {
   fs.writeFileSync(excusesFile, JSON.stringify(excuses, null, 2));
 }
 
-// Middleware to verify JWT token from cookie
+// Middleware to verify JWT token from cookie and serve 401 error page if unauthorized
 function authenticateJWT(req, res, next) {
   const token = req.cookies.token;
-  if (!token) return res.redirect('/login');
+  if (!token) return res.status(401).sendFile(path.join(__dirname, 'public', '401.html'));
 
   jwt.verify(token, SECRET, (err, user) => {
-    if (err) return res.redirect('/login');
+    if (err) return res.status(401).sendFile(path.join(__dirname, 'public', '401.html'));
     req.user = user;
     next();
   });
@@ -60,9 +60,9 @@ function authenticateJWT(req, res, next) {
 // Routes...
 app.get('/admin.html', (req, res) => {
   const token = req.cookies.token;
-  if (!token) return res.redirect('/login');
+  if (!token) return res.status(401).sendFile(path.join(__dirname, 'public', '401.html'));
   jwt.verify(token, SECRET, (err) => {
-    if (err) return res.redirect('/login');
+    if (err) return res.status(401).sendFile(path.join(__dirname, 'public', '401.html'));
     res.redirect('/admin');
   });
 });
@@ -76,16 +76,15 @@ app.post('/login', (req, res) => {
     const { username, password } = req.body;
     console.log('Login attempt:', username, password);
     if (username === ADMIN_USER.username && password === ADMIN_USER.password) {
-      // Here’s the key change: no expiresIn option
       const token = jwt.sign({ username }, SECRET);
       res.cookie('token', token, { httpOnly: true });
       return res.redirect('/admin');
     } else {
-      return res.status(401).send('Invalid credentials');
+      return res.status(401).sendFile(path.join(__dirname, 'public', '401.html'));
     }
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
   }
 });
 
@@ -110,7 +109,9 @@ app.get('/api/excuses/random', (req, res) => {
 
 app.post('/api/excuses', authenticateJWT, (req, res) => {
   const { excuse } = req.body;
-  if (!excuse || excuse.trim() === '') return res.status(400).json({ error: 'Excuse text required' });
+  if (!excuse || excuse.trim() === '') {
+    return res.status(400).sendFile(path.join(__dirname, 'public', '400.html'));
+  }
 
   const newExcuse = {
     id: excuses.length ? excuses[excuses.length - 1].id + 1 : 1,
@@ -123,7 +124,7 @@ app.post('/api/excuses', authenticateJWT, (req, res) => {
     console.log('✅ Excuses saved to JSON file successfully!');
   } catch (error) {
     console.error('❌ Failed to save excuses:', error);
-    return res.status(500).json({ error: 'Failed to save excuse' });
+    return res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
   }
 
   res.status(201).json(newExcuse);
@@ -132,7 +133,7 @@ app.post('/api/excuses', authenticateJWT, (req, res) => {
 app.delete('/api/excuses/:id', authenticateJWT, (req, res) => {
   const id = parseInt(req.params.id);
   const index = excuses.findIndex((e) => e.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Excuse not found' });
+  if (index === -1) return res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 
   const deleted = excuses.splice(index, 1);
 
@@ -141,20 +142,49 @@ app.delete('/api/excuses/:id', authenticateJWT, (req, res) => {
     console.log('✅ Excuses updated after deletion!');
   } catch (error) {
     console.error('❌ Failed to update excuses after deletion:', error);
-    return res.status(500).json({ error: 'Failed to update excuses' });
+    return res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
   }
 
   res.json({ message: 'Deleted successfully', deleted });
 });
 
+// Serve static files from public folder
 app.use(express.static(path.join(__dirname, 'public')));
-// Add this at the very end of your server.js, after all your routes and static middleware
 
+// Extra routes for error pages so you can test or link to them directly
+app.get('/400', (req, res) => {
+  res.status(400).sendFile(path.join(__dirname, 'public', '400.html'));
+});
+
+app.get('/401', (req, res) => {
+  res.status(401).sendFile(path.join(__dirname, 'public', '401.html'));
+});
+
+app.get('/403', (req, res) => {
+  res.status(403).sendFile(path.join(__dirname, 'public', '403.html'));
+});
+
+app.get('/404', (req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
+app.get('/500', (req, res) => {
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
+});
+
+// 404 handler (catch-all)
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
+// 500 error handling middleware (must be last)
+app.use((err, req, res, next) => {
+  console.error('🔥 Server error:', err.stack);
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server up and running on http://localhost:${PORT}`);
 });
+
